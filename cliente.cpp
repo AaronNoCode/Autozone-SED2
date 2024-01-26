@@ -156,23 +156,63 @@ void Customer::imprimir() {
     inputFile.close();
 }
 void Customer::modificar() {
-    string name;
-    cout << "Nombre: ";
-    getline(cin, name);
-    if (name == this->name) {
-        cout << "Nuevo nombre: ";
-        getline(cin, this->name);
-        cout << "Nuevo email: ";
-        getline(cin, this->email);
-        cout << "Nuevo RFC: ";
-        getline(cin, this->rfc);
-        cout << "Nuevo ID: ";
-        cin >> this->id;
-        cout << "Nuevo telefono: ";
-        cin >> this->phone;
-    } else {
-        cout << "No se encontro el cliente" << endl;
+    ofstream auxFile("backups/aux.txt", ios::out);
+    ifstream inputFile("backups/customers.txt", ios::in);
+    stringstream ss;
+    Customer customer;
+    string line, name;
+    int option;
+    cout << "Nombre del cliente a editar: ";
+    getline(cin, name, '\n');
+
+    while(getline(inputFile, line, '#')){
+        ss << line;
+        ss >> customer;
+        ss.clear();
+
+        if(toUpper(customer.getName()) == toUpper(name)){
+            cout << customer.toString() << endl;
+            while(option != 6){
+                cout << "1. Nombre\n2. Email\n3. RFC\n4. ID\n5. Telefono\n6. Salir\n";
+                cout << "Seleccione elemento para editar: ";
+                cin >> option;
+                cin.ignore();
+                switch(option) {
+                    case 1:
+                        cout<<"Nuevo nombre: ";
+                        getline(cin, customer.name, '\n');
+                        break;
+                    case 2:
+                        cout<<"Nuevo email: ";
+                        getline(cin, customer.email, '\n');
+                        break;
+                    case 3:
+                        cout<<"Nuevo RFC: ";
+                        getline(cin, customer.rfc, '\n');
+                        break;
+                    case 4:
+                        cout<<"Nuevo ID: ";
+                        getline(cin, customer.id, '\n');
+                        break;
+                    case 5:
+                        cout<<"Nuevo telefono: ";
+                        getline(cin, customer.phone, '\n');
+                        break;
+                    case 6:
+                        break;
+                    default:
+                        cout<<"Opción incorrecta"<<endl;
+                }
+            }
+            auxFile << customer;
+        }else{
+            auxFile << customer;
+        }
     }
+    inputFile.close();
+    auxFile.close();
+    remove("backups/customers.txt");
+    rename("backups/aux.txt", "backups/customers.txt");
 }
 void Customer::eliminar() {
     ofstream auxFile ("backups/aux.txt", ios::out);
@@ -180,6 +220,7 @@ void Customer::eliminar() {
     Customer customer;
     stringstream ss;
     string line, name;
+    bool confirmDeletion = false;
     if(!inputFile.good()){
         cout << "Archivo inexistente" << endl;
         return;
@@ -192,9 +233,12 @@ void Customer::eliminar() {
         ss >> customer;
         ss.clear();
 
-        if(toUpper(customer.getName()) != toUpper(name))
+        if(toUpper(customer.getName()) == toUpper(name))
+            confirmDeletion = true;
+        else
             auxFile << customer;
     }
+    confirmDeletion?cout<<name<<" eliminado"<<endl : cout<<"No se encontro el cliente"<<endl;
     inputFile.close();
     auxFile.close();
     remove("backups/customers.txt");
@@ -214,13 +258,13 @@ void Customer::eliminar() {
 
 int main () {
     Customer c;
-    int op;
+    int option;
     cout<<"1. Agregar\n2. Imprimir\n3. Buscar\n4. Modificar\n5. Eliminar\n6. Salir\n";
-    while(op != 6){
+    while(option != 6){
         cout<<"\nOpcion: ";
-        cin>>op;
+        cin>>option;
         cin.ignore();
-        switch (op) {
+        switch (option) {
             case 1: 
                 c.agregar();
                 break;
