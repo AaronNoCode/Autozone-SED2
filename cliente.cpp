@@ -162,6 +162,7 @@ void Customer::modificar() {
     Customer customer;
     string line, name;
     int option;
+    bool found = false;
     cout << "Nombre del cliente a editar: ";
     getline(cin, name, '\n');
 
@@ -171,6 +172,7 @@ void Customer::modificar() {
         ss.clear();
 
         if(toUpper(customer.getName()) == toUpper(name)){
+            found = true;
             cout << customer.toString() << endl;
             while(option != 6){
                 cout << "1. Nombre\n2. Email\n3. RFC\n4. ID\n5. Telefono\n6. Salir\n";
@@ -208,6 +210,11 @@ void Customer::modificar() {
         }else{
             auxFile << customer;
         }
+    }
+    if (!found) {
+        cout << "No se encontro el cliente" << endl;
+    } else {
+        cout << "Cliente modificado" << endl;
     }
     inputFile.close();
     auxFile.close();
