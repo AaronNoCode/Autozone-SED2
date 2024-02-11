@@ -8,23 +8,24 @@ using namespace std;
 
 class Product {
 private:
-    string code; // El código es una cadena
+    int idMaxSize = 10;
+    string id; // El código es una cadena
     string name;
     string description;
     string price;
 
 public:
     Product();
-    Product(const string& newCode, const string& newName, const string& newPrice, const string& newDescription);
+    Product(const string& newId, const string& newName, const string& newPrice, const string& newDescription);
 
     // Getters
-    [[nodiscard]] string getCode() const { return this->code; }
+    [[nodiscard]] string getId() const { return this->id; }
     [[nodiscard]] string getName() const { return this->name; }
     [[nodiscard]] string getPrice() const { return this->price; }
     [[nodiscard]] string getDescription() const { return this->description; }
 
     // Setters
-    void setCode(const string& newCode) { this->code = newCode; }
+    void setId(const string& newId) { this->id = newId; }
     void setName(const string& newName) { this->name = newName; }
     void setPrice(const string& newPrice) { this->price = newPrice; }
     void setDescription(const string& newDescription) { this->description = newDescription; }
@@ -36,8 +37,8 @@ public:
     void modificar();
     void eliminar() const; 
 
-    friend ostream &operator << (ostream &out, const Product &product) {
-        out << product.leftPad(product.code) << product.code;
+    friend ofstream &operator << (ofstream &out, const Product &product) {
+        out << product.leftPad(product.id) << product.id;
         out << product.leftPad(product.name) << product.name;
         out << product.leftPad(product.price) << product.price;
         out << product.leftPad(product.description) << product.description;
@@ -45,16 +46,16 @@ public:
     }
     friend ifstream &operator >>(ifstream &is, Product &p){
         char fieldLength[3] = {0};
-        char code[100] = {0};
+        char id[100] = {0};
         char name[100] = {0};
         char description[100] = {0};
         char price[20] = {0};
         string stringifiedField; 
         
         is.read(fieldLength, 2);
-        is.read(code,stoi(fieldLength));
-        stringifiedField = string(code);
-        p.setCode(stringifiedField);
+        is.read(id,stoi(fieldLength));
+        stringifiedField = string(id);
+        p.setId(stringifiedField);
 
         is.read(fieldLength, 2);
         is.read(name,stoi(fieldLength));
@@ -75,7 +76,7 @@ public:
     }
 
     string toString() const {
-        return "Codigo: " + this->getCode() + "\n" + "Nombre: " + this->getName() + "\n" + "Precio: " + this->getPrice()  + "\n" + "Descripcion: " + this->getDescription() + "\n"; 
+        return "Codigo: " + this->getId() + "\n" + "Nombre: " + this->getName() + "\n" + "Precio: " + this->getPrice()  + "\n" + "Descripcion: " + this->getDescription() + "\n"; 
     } 
     string leftPad(const string &str) const {
         if(str.length() > 9){
@@ -100,17 +101,18 @@ public:
         }
         return true;
     }
+    friend class OrdenCompra;
 };  
 
 Product::Product(){
-    code = ' ';
+    id = ' ';
     name = ' ';
     description = ' ';
     price = ' ';
 }
 
-Product::Product(const string& newCode, const string& newName, const string& newPrice, const string& newDescription){
-    code = newCode;
+Product::Product(const string& newId, const string& newName, const string& newPrice, const string& newDescription){
+    id = newId;
     name = newName;
     description = newDescription;
     price = newPrice;
@@ -120,8 +122,8 @@ void Product::insertar() {
     Product product;
     do{    
         cout << "Ingresar codigo de producto: ";
-        getline(cin, product.code, '\n');
-    }while(containsSpecialCharacter(product.getCode()));
+        getline(cin, product.id, '\n');
+    }while(containsSpecialCharacter(product.getId()));
     do{
         cout << "Ingresar nombre: ";
         getline(cin, product.name, '\n');
@@ -172,7 +174,7 @@ void Product::buscar() const {
     Product product;
     while (inputFile.peek() != -1){
         inputFile >> product;
-        if (product.getCode() == searchCode) {
+        if (product.getId() == searchCode) {
             cout << "Producto entontrado:\n" << product.toString();
             return;
         }
@@ -197,7 +199,7 @@ void Product::modificar() {
     }
     while(inputFile.peek() != -1){
         inputFile >> product;
-        if(product.getCode() == searchCode){
+        if(product.getId() == searchCode){
             found = true;
             cout << "Producto encontrado:\n" << product.toString();
             while(option != 6){
@@ -208,7 +210,7 @@ void Product::modificar() {
                 switch(option) {
                     case 1:
                         cout<<"Nuevo codigo: ";
-                        getline(cin, product.code, '\n');
+                        getline(cin, product.id, '\n');
                         break;
                     case 2:
                         cout<<"Nuevo nombre: ";
@@ -228,10 +230,8 @@ void Product::modificar() {
                         cout<<"Opción incorrecta"<<endl;
                 }
             }
-            auxFile << product;
-        }else{
-            auxFile << product;
         }
+        auxFile << product;
     }
     if(!found){
         cout << "Producto no encontrado\n";
@@ -259,7 +259,7 @@ void Product::eliminar() const {
     }
     while (inputFile.peek() != -1) {
         inputFile >> product;
-        if (product.getCode() == searchCode){
+        if (product.getId() == searchCode){
             found = true;
         }else{
             auxFile << product;
@@ -276,7 +276,7 @@ void Product::eliminar() const {
     rename("backups/aux.txt", "backups/products.txt");
 }
 
-int main() {
+/* int main() {
     Product p;
     int option = 0;
     cout<<"Gestion de Productos\n";
@@ -317,4 +317,4 @@ int main() {
         }
     }
     return 0;
-}
+} */
