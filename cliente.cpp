@@ -9,6 +9,7 @@ using std::ios, std::rename, std::stringstream, std::ofstream, std::ifstream, st
 
 class Customer {
     private:
+        int idMaxSize = 10;
         string name;
         string email;
         string rfc;
@@ -41,7 +42,7 @@ class Customer {
         void modificar();
         void eliminar();
 
-        friend ostream &operator << (ostream &out, const Customer &customer) {
+        friend ofstream &operator << (ofstream &out, const Customer &customer) {
             out << customer.name << '*';
             out << customer.email << '*';
             out << customer.rfc << '*';
@@ -57,8 +58,15 @@ class Customer {
             getline(in, customer.phone, '#');
             return in;
         }
+    friend class OrdenCompra;
 };
-Customer::Customer(){}
+Customer::Customer(){
+    name = ' ';
+    email = ' ';
+    rfc = ' ';
+    id = ' ';
+    phone = ' ';
+}
 Customer::Customer(string newName, string newEmail, string newRfc, string newId, string newPhone)
 {
     this->name = newName;
@@ -263,7 +271,7 @@ void Customer::eliminar() {
     return newStr;
 }
 
-int main () {
+/* int main () {
     Customer c;
     int option;
     cout<<"1. Agregar\n2. Imprimir\n3. Buscar\n4. Modificar\n5. Eliminar\n6. Salir\n";
@@ -296,4 +304,4 @@ int main () {
     }
     cout<<"\n\nEnd";
     return 0;
-}
+} */
