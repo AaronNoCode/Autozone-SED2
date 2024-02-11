@@ -1,0 +1,12 @@
+-Ediciones y actualizaciones en cascada
+Desde orden de compra no puedes editar los datos del cliente, pero si se editan desde clientes, se debe actualizar en cascada en todos las demás clases donde se incluya
+
+Al eliminar una orden se elimina también el cliente?
+Si se elimina un cliente se eliminan todas sus órdenes?
+
+Por lo pronto estas son las convergencias presentes:
+Cliente.id->OrdenCompra
+Producto.id->OrdenCompra
+
+-Verificaciones 
+Al agregar una orden de compra se verifica si el producto existe y si el cliente existe 
