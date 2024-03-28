@@ -35,27 +35,35 @@ class Customer {
 
         [[nodiscard]] string toString() const;
         [[nodiscard]] string toUpper(const string& str) const;
-
+        [[nodiscard]] string encrypt(string &argument);
+        [[nodiscard]] string decrypt(string &argument);
+ 
         void agregar();
         void imprimir();
         void buscar();
         void modificar();
         void eliminar();
 
-        friend ofstream &operator << (ofstream &out, const Customer &customer) {
-            out << customer.name << '*';
-            out << customer.email << '*';
-            out << customer.rfc << '*';
-            out << customer.id << '*';
-            out << customer.phone << '#';
+        friend ofstream &operator << (ofstream &out, Customer &customer) {
+            out << customer.encrypt(customer.name) << '*';
+            out << customer.encrypt(customer.email) << '*';
+            out << customer.encrypt(customer.rfc) << '*';
+            out << customer.encrypt(customer.id) << '*';
+            out << customer.encrypt(customer.phone) << '#';
             return out;
         }
         friend istream &operator >> (istream &in, Customer &customer) {
-            getline(in, customer.name,'*');
-            getline(in, customer.email,'*');
-            getline(in, customer.rfc, '*');
-            getline(in, customer.id, '*');
-            getline(in, customer.phone, '#');
+            string aux = " ";
+            getline(in, aux, '*');
+            customer.setName(customer.decrypt(aux));
+            getline(in, aux, '*');
+            customer.setEmail(customer.decrypt(aux));
+            getline(in, aux, '*');
+            customer.setRfc(customer.decrypt(aux));
+            getline(in, aux, '*');
+            customer.setId(customer.decrypt(aux));
+            getline(in, aux, '#');
+            customer.setPhone(customer.decrypt(aux));
             return in;
         }
     friend class OrdenCompra;
@@ -271,7 +279,27 @@ void Customer::eliminar() {
     return newStr;
 }
 
-/* int main () {
+[[nodiscard]]string Customer::encrypt (string &argument) {
+    int length = argument.length();
+    
+    for(int actual = 0; actual < length; actual++){
+        argument[actual] += 3; 
+    }
+    
+    return argument;
+}
+
+[[nodiscard]]string Customer::decrypt (string &argument) {
+    int length = argument.length();
+
+    for(int actual = 0; actual < length; actual++){
+        argument[actual] -= 3;
+    }
+
+    return argument;
+}
+
+int main () {
     Customer c;
     int option;
     cout<<"1. Agregar\n2. Imprimir\n3. Buscar\n4. Modificar\n5. Eliminar\n6. Salir\n";
@@ -304,4 +332,4 @@ void Customer::eliminar() {
     }
     cout<<"\n\nEnd";
     return 0;
-} */
+}
