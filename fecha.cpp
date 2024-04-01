@@ -1,7 +1,8 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 
-using std::string, std::to_string, std::cout;
+using std::string, std::to_string, std::cout, std::ifstream, std::ofstream;
 
 class Date {
     private: 
@@ -52,5 +53,15 @@ class Date {
             return '0' + str;
         }
     }
-    friend class OrdenCompra;
+    friend ifstream &operator >> (ifstream &ifs, Date &date){
+        ifs.read((char*)&date, sizeof(date));
+        return ifs;
+    } 
+    friend ofstream &operator << (ofstream &ofs, Date &date){
+        ofs << date.toStringToFile();
+        return ofs;
+    }
+
+    friend class Factura;
+    friend class HashTable;
 };

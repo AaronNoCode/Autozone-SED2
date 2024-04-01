@@ -66,7 +66,7 @@ class Customer {
             customer.setPhone(customer.decrypt(aux));
             return in;
         }
-    friend class OrdenCompra;
+    friend class Factura;
 };
 Customer::Customer(){
     name = ' ';
@@ -299,7 +299,7 @@ void Customer::eliminar() {
     return argument;
 }
 
-int main () {
+/* int main () {
     Customer c;
     int option;
     cout<<"1. Agregar\n2. Imprimir\n3. Buscar\n4. Modificar\n5. Eliminar\n6. Salir\n";
@@ -332,4 +332,4 @@ int main () {
     }
     cout<<"\n\nEnd";
     return 0;
-}
+} */

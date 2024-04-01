@@ -1,37 +1,37 @@
-// ! Eventually will need integration with customer and product since this is taking values from them, so validation of product existence and customer existance gotta be positive 
-
 #include <iostream>
 #include <fstream>
 #include <string>
 #include "cliente.cpp"
 #include "producto.cpp"
 #include "fecha.cpp"
+#include "invIndexTicket.cpp"
 
-/* Registro de longitud fija sin delimitadores, agregar, eliminar, editar, imprimir */
+/* Registro de longitud fija sin delimitadores, agregar, eliminar, editar, imprimir con índices invertidos */
 
 using namespace std;
 
-class OrdenCompra {
+class Factura {
     private:
-        string orderId; // 10 chars
+        string facturaId; // 10 chars
         string clienteId; // 10 chars id
         string productoId; // 10 chars id
         Date fecha; //8 day + month + year
         string productQuantity; // 3 chars ~ 41 chars total
+        InvertedIndex invIndex;
     public:
-        OrdenCompra () {
-            orderId = ' ';
+        Factura () {
+            facturaId = ' ';
             productQuantity = ' ';
         }
-        OrdenCompra (const string& newId, const string& newQuantity, const string& newClienteId, const string& newProductoId, const Date& newFecha) {
-            this->orderId = newId;
+        Factura (const string& newId, const string& newQuantity, const string& newClienteId, const string& newProductoId, const Date& newFecha) {
+            this->facturaId = newId;
             this->productQuantity = newQuantity;
             this->clienteId = newClienteId;
             this->productoId = newProductoId;
             this->fecha = newFecha;
         }
         void setOrderId(const string& newId) {
-            this->orderId = newId;
+            this->facturaId = newId;
         }
         void setQuantity(const string& newQuantity) {
             this->productQuantity = newQuantity;
@@ -47,7 +47,7 @@ class OrdenCompra {
         }
 
         [[nodiscard]] string getOrderId() const {
-            return this->orderId;
+            return this->facturaId;
         }
         [[nodiscard]] string getQuantity() const {
             return this->productQuantity;
@@ -64,10 +64,10 @@ class OrdenCompra {
 
         void insertar() {
             ofstream outputFile("backups/orders.txt", ios::app);
-            OrdenCompra orden;
+            Factura orden;
             do{    
                 cout << "Ingresar codigo de orden: ";
-                getline(cin, orden.orderId, '\n');
+                getline(cin, orden.facturaId, '\n');
             }while(containsSpecialCharacter(orden.getOrderId()));
             do{
                 cout << "Ingresar cantidad: ";
@@ -93,7 +93,9 @@ class OrdenCompra {
                 cout << "Ingresar anio: ";
                 cin >> orden.fecha.year;
             }while(orden.fecha.getYear() < 1900 || orden.fecha.getYear() > 9999);
-
+            outputFile.seekp(0,ios::end);
+            int index = outputFile.tellp();
+            invIndex.add(orden.getClienteId(), index);
             outputFile << orden;
             outputFile.close();
         }
@@ -102,7 +104,7 @@ class OrdenCompra {
             if(!inputFile.good()){
                 cout << "Archivo inexistente\n";
             }
-            OrdenCompra orden;
+            Factura orden;
             while(inputFile.peek() != -1){
                 inputFile >>orden;
                 cout << orden.toString() << endl;
@@ -114,19 +116,46 @@ class OrdenCompra {
             if(!inputFile.good()){
                 cout << "Archivo inexistente\n";
             }
-            OrdenCompra orden;
+            Factura orden;
+            vector<int> indexes;
             string id;
-            cout << "Ingresar el codigo de la orden: ";
-            getline(cin, id, '\n');
-            while(inputFile.peek() != -1){
-                inputFile >> orden;
-                if(orden.getOrderId() == id){
-                    cout << orden.toString();
+            int option;
+            cout << "Buscar por:\n1. Codigo de orden\n2. Codigo de cliente\n";
+            cin >> option;
+            cin.ignore();
+            switch (option){
+            case 1:
+                cout << "Ingresar el codigo de la orden: ";
+                getline(cin, id, '\n');
+                while(inputFile.peek() != -1){
+                    inputFile >> orden;
+                    if(orden.getOrderId() == id){
+                        cout << orden.toString();
+                        return;
+                    }
+                }
+                cout << "No se encontro la orden.\n";
+                inputFile.close();
+                return;
+                break;
+            case 2:
+                cout << "Ingresar el codigo del cliente: ";
+                getline(cin, id, '\n');
+                indexes = invIndex.lookUp(id);
+                if(indexes.empty()){
+                    cout << "No se encontraron ordenes para el cliente.\n";
                     return;
                 }
+                for(int index : indexes){
+                    inputFile.seekg(index, ios::beg);
+                    inputFile >> orden;
+                    cout << orden.toString();
+                }
+                break;
+            default:
+                cout<< "Opción incorrecta\n";
             }
-            cout << "No se encontro la orden.\n";
-            inputFile.close();
+            
         }
         void modificar() { // Solamente se puede editar cantidad, fecha y código porque las demás propiedades son claves foráneas 
             ofstream outputFile("backups/aux.txt", ios::out);
@@ -134,7 +163,7 @@ class OrdenCompra {
             if(!inputFile.good()){
                 cout << "Archivo inexistente\n";
             }
-            OrdenCompra orden;
+            Factura orden;
             bool found = false;
             int option = -1;
             string id;
@@ -153,7 +182,7 @@ class OrdenCompra {
                         switch(option) {
                             case 1:
                                 cout<<"Nuevo codigo de orden: ";
-                                getline(cin, orden.orderId, '\n');
+                                getline(cin, orden.facturaId, '\n');
                                 break;
                             case 2:
                                 cout<<"Nueva cantidad : ";
@@ -216,7 +245,7 @@ class OrdenCompra {
             if(!inputFile.good()){
                 cout << "Archivo inexistente\n";
             }
-            OrdenCompra orden;
+            Factura orden;
             string id;
             bool found = false;
             cout << "Ingresar el codigo de la orden a eliminar: ";
@@ -224,6 +253,7 @@ class OrdenCompra {
             while(inputFile.peek() != -1){
                 inputFile >> orden;
                 if(orden.getOrderId() == id){
+                    invIndex.updateIndexFromDeletion(stoi(orden.getOrderId()));
                     found = true;
                 } else {
                     outputFile << orden; 
@@ -240,9 +270,18 @@ class OrdenCompra {
             rename("backups/aux.txt", "backups/orders.txt");
         }
 
+        void loadIndex(){
+            ifstream inputFile("backups/invIndex.txt");
+            if(!inputFile.good()){
+                ofstream ofs("backups/invIndex.txt");
+                ofs.close();
+            }
+            inputFile >> invIndex;
+            inputFile.close();
+        }
         [[nodiscard]]
         string toString() {
-            return "Codigo de orden: " + this->orderId + "\nCliente: " + this->getClienteId() + "\nProducto: " + this->getProductoId() + "\nFecha: " + fecha.toStringDisplay() + "\nCantidad: " + productQuantity + '\n';
+            return "Codigo de orden: " + this->facturaId + "\nCliente: " + this->getClienteId() + "\nProducto: " + this->getProductoId() + "\nFecha: " + fecha.toStringDisplay() + "\nCantidad: " + productQuantity + '\n';
         }
         bool containsOnlyNumber(const string &str){
         for(char c : str){
@@ -271,7 +310,7 @@ class OrdenCompra {
             }
             return cleanString;
         }
-        friend ifstream &operator >> (ifstream &ifs, OrdenCompra &orden){
+        friend ifstream &operator >> (ifstream &ifs, Factura &orden){
             char customerId[11] = {0};
             char productId[11] = {0};
             char date[9] = {0};
@@ -304,24 +343,24 @@ class OrdenCompra {
 
             return ifs;
         }
-        friend ofstream &operator << (ofstream &ofs, OrdenCompra &orden){
+        friend ofstream &operator << (ofstream &ofs, Factura &orden){
             ofs << orden.rightPad(orden.getOrderId(),10) << orden.rightPad(orden.getClienteId(), 10) << orden.rightPad(orden.getProductoId(), 10) << orden.fecha.toStringToFile() << orden.rightPad(orden.getQuantity(),3);
             return ofs;
         }
 
 };
 int main(){
-    OrdenCompra oc;
+    Factura oc;
     int option = 0;
     cout<<"Gestion de Productos\n";
     cout<<"====================\n";
     while (option != 6) {
         cout<<"\nOpciones:\n";
-        cout<<"1. Agregar nueva orden\n";
-        cout<<"2. Imprimir todas las ordenes\n";
-        cout<<"3. Buscar orden\n";
-        cout<<"4. Modificar orden\n";
-        cout<<"5. Eliminar orden\n";
+        cout<<"1. Agregar nueva factura\n";
+        cout<<"2. Imprimir todas las facturas\n";
+        cout<<"3. Buscar factura\n";
+        cout<<"4. Modificar factura\n";
+        cout<<"5. Eliminar factura\n";
         cout<<"6. Salir\n";
         cout<<"Seleccione una opcion: ";
         cin>>option;

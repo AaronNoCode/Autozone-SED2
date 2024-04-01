@@ -9,9 +9,9 @@ using namespace std;
 class Empleado {
     private:
         int id; // Max 9 chars
-        char nombre[50]; // 50 chars max
+        char nombre[51]; // 50 chars max
         long telefono; // 10 chars 
-        char email[50]; // 50 chars max
+        char email[51]; // 50 chars max
     public:
         Empleado () {
             id = 0;
@@ -35,30 +35,30 @@ class Empleado {
                     break;
                 }
             }
-            nombre[i+1] = '\0';
+            nombre[i] = '\0';
         }
         void setEmail(const string &newEmail) {
-            for (int i = 0; i < newEmail.length(); i++) {
+            int i;
+            for (i = 0; i < newEmail.length(); i++) {
                 email[i] = newEmail[i];
                 if(i == 49){
                     email[50] = '\0';
                     break;
                 }
             }
+            email[i] = '\0';
         }
         [[nodiscard]] int getCodigo() const {
             return id;
         }
         [[nodiscard]] string getNombre() const {
-            string str(nombre);
-            return str;
+            return string(this->nombre);
         }
         [[nodiscard]] long getTelefono() const {
             return telefono;
         }
         [[nodiscard]] string getEmail() const {
-            string str(email);
-            return str;
+            return string(this->email);
         }
 
         void insertar() {
